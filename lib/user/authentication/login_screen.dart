@@ -18,6 +18,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  bool googleLoading = false;
   TextEditingController emailtextEditingController = TextEditingController();
   TextEditingController passwordtextEditingController = TextEditingController();
 
@@ -149,20 +150,31 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 20,
             ),
             Consumer<GoogleSignInController>(builder: (context, model, child) {
-              return GestureDetector(
-                child: Image.asset(
-                  "media/images/google.png",
-                  width: 250,
-                ),
-                onTap: () {
-                  Provider.of<GoogleSignInController>(context, listen: false)
-                      .login();
-                  currentGoogleAccount = model.googleAccount;
-                  currentGUid = model.googleAccount!.id;
-                  Navigator.pushReplacement(
-                      context, MaterialPageRoute(builder: (c) => MainScreen()));
-                },
-              );
+              return !googleLoading
+                  ? GestureDetector(
+                      child: Image.asset(
+                        "media/images/google.png",
+                        width: 250,
+                      ),
+                      onTap: () async {
+                        setState(() {
+                          googleLoading = true;
+                        });
+                        await Provider.of<GoogleSignInController>(context,
+                                listen: false)
+                            .login();
+                        currentGoogleAccount = model.googleAccount;
+                        currentGUid = model.googleAccount!.id;
+                        Navigator.pushReplacement(context,
+                            MaterialPageRoute(builder: (c) => MainScreen()));
+                        setState(() {
+                          googleLoading = false;
+                        });
+                      },
+                    )
+                  : Center(
+                      child: CircularProgressIndicator(),
+                    );
             }),
           ]),
         ),
